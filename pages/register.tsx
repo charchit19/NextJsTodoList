@@ -1,27 +1,50 @@
-"use client"
+"use client";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/router";
 import "./style.css";
 import Nav from "./nav";
+import {
+  onAuthStateChanged,
+  signOut,
+  signInWithPopup,
+  GoogleAuthProvider,
+} from "firebase/auth";
+import { auth } from "../middleware/firebase";
 import Head from "next/head";
-import { UserAuth } from "@/context/AuthContext";
-import firebase from "firebase/compat/app";
 
 const Register = () => {
+  const [user, setUser] = useState(null);
   const router = useRouter();
-  const { user, googleSignIn, logOut } = UserAuth() as {
-    user: firebase.User;
-    googleSignIn: () => Promise<void>;
-    logOut: () => void;
-  };
   const [googleSignInComplete, setGoogleSignInComplete] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     confirmPassword: "",
   });
+
+  const logOut = () => {
+    signOut(auth);
+  };
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const googleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      setUser(user);
+    } catch (error) {
+      console.error("Google Sign In Error:", error);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({

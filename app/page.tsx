@@ -1,12 +1,14 @@
 "use client"
-import React, { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { AuthContextProvider } from "@/context/AuthContext";
+import { useEffect } from "react";
+import { useRouter } from "next/router";
+
 const Page = () => {
   const router = useRouter();
+
   useEffect(() => {
     router.push("/login");
   }, []);
+
   return null;
 };
 

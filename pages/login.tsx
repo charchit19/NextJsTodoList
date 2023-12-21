@@ -1,22 +1,16 @@
-"use client"
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import { useRouter } from "next/router";
+import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { auth } from "../middleware/firebase";
 import "./style.css";
 import Nav from "./nav";
 import Head from "next/head";
-import { UserAuth } from "@/context/AuthContext";
-import firebase from "firebase/compat/app";
 
-// Login component
 const Login = () => {
+  const [user, setUser] = useState(null);
   const [googleSignInComplete, setGoogleSignInComplete] = useState(false);
-  const { user, googleSignIn } = UserAuth() as {
-    user: firebase.User;
-    googleSignIn: () => Promise<void>;
-  };
-
   const router = useRouter();
   const [formData, setFormData] = useState({
     email: "",
@@ -24,24 +18,36 @@ const Login = () => {
   });
 
   useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const googleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      setUser(user);
+    } catch (error) {
+      console.error('Google Sign In Error:', error);
+    }
+  };
+  
+  useEffect(() => {
     if (user && googleSignInComplete) {
       handleFirebase();
     }
   }, [user, googleSignInComplete]);
 
-  // Handle Firebase login
+
   const handleFirebase = async () => {
     try {
       const response = await axios.post(
         "api/firebaseLogin",
-        {
-          email: user.email,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+        { email: user.email },
+        { headers: { "Content-Type": "application/json" } }
       );
       const data = await response.data;
 
@@ -59,10 +65,9 @@ const Login = () => {
     }
   };
 
-  // Handle Google Sign-In
   const handleGoogleSignIn = async () => {
     try {
-      console.log("google signin button pressed");
+      console.log("Google signin button pressed");
       await googleSignIn();
       setGoogleSignInComplete(true);
     } catch (error) {
@@ -70,16 +75,14 @@ const Login = () => {
     }
   };
 
-  // Handle form input change
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
 
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
@@ -87,8 +90,8 @@ const Login = () => {
       localStorage.setItem("token", response.data.token);
       alert("Login successful");
       router.push("/dashboard");
-    } catch (error: any) {
-      const axiosError = error as AxiosError;
+    } catch (error) {
+      const axiosError = error;
       if (axiosError.response) {
         alert("Invalid credentials");
         console.error("Login error:", axiosError.response.data);
@@ -97,7 +100,6 @@ const Login = () => {
       }
     }
   };
-
   // Render the component
   return (
     <div>
@@ -107,7 +109,7 @@ const Login = () => {
       <Nav />
       <div>
         <section className="bg-gray-50 dark:bg-gray-900">
-          <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto h-screen lg:py-0">
+          <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto h-full lg:py-0">
             <a
               href="#"
               className="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white"
@@ -179,7 +181,7 @@ const Login = () => {
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
                     >
-                      <g clip-path="url(#clip0_13183_10121)">
+                      <g clipPath="url(#clip0_13183_10121)">
                         <path
                           d="M20.3081 10.2303C20.3081 9.55056 20.253 8.86711 20.1354 8.19836H10.7031V12.0492H16.1046C15.8804 13.2911 15.1602 14.3898 14.1057 15.0879V17.5866H17.3282C19.2205 15.8449 20.3081 13.2728 20.3081 10.2303Z"
                           fill="#3F83F8"

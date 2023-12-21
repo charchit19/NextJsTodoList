@@ -22,6 +22,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "pages/nav.js", "middleware/mongoose.tsx", "pages/register.js", "models/user.js", "pages/login.js"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "pages/nav.js", "middleware/mongoose.tsx", "pages/register.js", "models/user.js", "pages/login.tsx", "context/AuthContext.js"],
   "exclude": ["node_modules"]
 }
