@@ -1,5 +1,4 @@
-"use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, ChangeEvent, FormEvent } from "react";
 import Link from "next/link";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/router";
@@ -14,11 +13,18 @@ import {
 import { auth } from "../middleware/firebase";
 import Head from "next/head";
 
+// Define the FormData interface
+interface FormData {
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
 const Register = () => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
   const router = useRouter();
-  const [googleSignInComplete, setGoogleSignInComplete] = useState(false);
-  const [formData, setFormData] = useState({
+  const [googleSignInComplete, setGoogleSignInComplete] = useState<boolean>(false);
+  const [formData, setFormData] = useState<FormData>({
     email: "",
     password: "",
     confirmPassword: "",
@@ -46,13 +52,14 @@ const Register = () => {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
@@ -63,8 +70,7 @@ const Register = () => {
     } catch (error: any) {
       const axiosError = error as AxiosError;
       if (axiosError.response) {
-        const errorMessage =
-          (axiosError.response.data as { message?: string })?.message || "";
+        const errorMessage = (axiosError.response.data as { message?: string })?.message || "";
 
         if (errorMessage === "User with this email already exists") {
           alert("User with this email already exists, Please login");

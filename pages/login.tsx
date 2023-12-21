@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, ChangeEvent, FormEvent } from "react"; // Import ChangeEvent and FormEvent
 import Link from "next/link";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { useRouter } from "next/router";
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "../middleware/firebase";
@@ -8,11 +8,16 @@ import "./style.css";
 import Nav from "./nav";
 import Head from "next/head";
 
+interface FormData {
+  email: string;
+  password: string;
+}
+
 const Login = () => {
-  const [user, setUser] = useState(null);
-  const [googleSignInComplete, setGoogleSignInComplete] = useState(false);
+  const [user, setUser] = useState<any>(null); // Change to 'any' for simplicity, you can replace it with a specific type
+  const [googleSignInComplete, setGoogleSignInComplete] = useState<boolean>(false);
   const router = useRouter();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     email: "",
     password: "",
   });
@@ -34,13 +39,12 @@ const Login = () => {
       console.error('Google Sign In Error:', error);
     }
   };
-  
+
   useEffect(() => {
     if (user && googleSignInComplete) {
       handleFirebase();
     }
   }, [user, googleSignInComplete]);
-
 
   const handleFirebase = async () => {
     try {
@@ -75,14 +79,14 @@ const Login = () => {
     }
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
@@ -91,7 +95,7 @@ const Login = () => {
       alert("Login successful");
       router.push("/dashboard");
     } catch (error) {
-      const axiosError = error;
+      const axiosError = error as AxiosError;
       if (axiosError.response) {
         alert("Invalid credentials");
         console.error("Login error:", axiosError.response.data);
@@ -109,9 +113,8 @@ const Login = () => {
       <Nav />
       <div>
         <section className="bg-gray-50 dark:bg-gray-900">
-          <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto h-full lg:py-0">
-            <a
-              href="#"
+          <div className="flex flex-col items-center justify-center h-screen mx-auto lg:py-0">
+            <p
               className="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white"
             >
               <img
@@ -120,7 +123,7 @@ const Login = () => {
                 alt="logo"
               />
               Todo
-            </a>
+            </p>
             <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
               <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
                 <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
